@@ -20,4 +20,5 @@
 7. check the (glm::mat4 * )piScratch ; if it is right.
   -- std::cout<<glm::to_String(piScratch); 
   -- imitate the (clusterSort *) piScratch
+8. 
   
