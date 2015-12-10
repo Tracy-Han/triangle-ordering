@@ -1172,9 +1172,6 @@ void AppMain(float pfVertexPositionsIn[][INUMVERTICES*3],float * pfCameraPosiito
 
 	GLuint baseInstance = 0;
 	GLuint numDraws = 0;
-	//LoadTriangle(pfVertexPositionsIn[0], pfCameraPosiitons, piIndexBufferIn[0], numVertices, numFaces);
-	//glViewport(0, 0,INUMVIEWS*CANVASWIDTH, CANVASHEIGHT);
-//	Render(baseInstance);
 	for (int i = 0; i < 30; i++)
 	{
 		for (int j = 0; j < 5; j++)
@@ -1268,48 +1265,12 @@ int main(int argc, char *argv[]) {
 	for (int i = 0; i < numFrames; i++)
 	{
 		pvPatchesPostions(piIndexBufferOut, iNumFaces, pfFramesVertexPositionsIn[i], iNumVertices, piClustersOut, iNumClusters, pvFramesPatchesPositions[i], piScratch);
-		//std::cout <<"framdId" <<i<<" "<< pvFramesPatchesPositions[i][0].v[0] << " " << pvFramesPatchesPositions[i][0].v[1] << " " << pvFramesPatchesPositions[i][0].v[2] << std::endl;
-		//std::cout << "framdId" << i << " " << pvFramesPatchesPositions[i][iNumClusters - 1].v[0] << " " << pvFramesPatchesPositions[i][iNumClusters - 1].v[1] << " " << pvFramesPatchesPositions[i][iNumClusters - 1].v[2] << std::endl;
 	}
 
 	tstart = time(0);
 	int pickIds[5] = { 148, 54, 17, 92, 45 }; int numClusters = 5; int numPatches = iNumClusters;
 	int means[5][INUMFACES * 3];
 	initMeans(pvFramesPatchesPositions, piIndexBufferOut, piClustersOut, numFrames, numClusters, numPatches, pickIds, pfCameraPositions, means, piScratch);
-	// get the assignments and allRatios
-	// load the files and test the moveMeans
-	/*myFile = fopen("assignments.txt", "r");
-	int frameId, viewId;
-	int assignments[INUMFRAMES][INUMVIEWS];
-	for (int i = 0; i < numViews*numFrames; i++)
-	{
-		viewId = i % numViews;
-		frameId = i / numViews;
-		fscanf(myFile, "%d \n", &assignments[frameId][viewId]);
-	}
-	fclose(myFile);
-	myFile = fopen("allRatios.txt", "r");
-	float allRatios[INUMFRAMES][INUMVIEWS];
-	for (int i = 0; i < numViews*numFrames; i++)
-	{
-		viewId = i % numViews;
-		frameId = i / numViews;
-		fscanf(myFile, "%f \n", &allRatios[frameId][viewId]);
-	}
-	fclose(myFile);
-
-	int i, j, clusterId;
-	bool moved = false;
-	bool clusterMoved;
-	for (i = 0; i < 1; i++)
-	{
-		clusterId = i;
-		clusterMoved = moveClusterMean(means[clusterId], clusterId, piIndexBufferOut, piClustersOut, pvFramesPatchesPositions, pvCameraPositions, assignments, allRatios, numPatches, numViews, numFrames, piIndexBufferOut, piScratch);
-		if (clusterMoved == true)
-		{
-			moved == true;
-		}
-	}*/
 
 	AppMain(pfFramesVertexPositionsIn, pfCameraPositions, means, iNumVertices, iNumFaces);
 	tend = time(0);
