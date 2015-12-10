@@ -1,0 +1,6 @@
+#version 440
+layout (location = 0) in vec3 vert;
+layout (location = 1) in mat4 fullTransformMatrix;
+void main() {
+	gl_Position = fullTransformMatrix * vec4(vert, 1);
+}
