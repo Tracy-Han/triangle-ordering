@@ -1,10 +1,8 @@
 
-1. test if means is the same
-    -- if not same just use the means file from the webgl as a test for contiue checking and come back later
-    -- checked in 12/12, it's right
 
 2. test if overdraw ratio is the same (compared with webgl with same face,same frame and save viewpoint) (drawElementBasedInstance(1,0))
     -- shouldn't have big differences, prove the overdraw ratio is right
+    -- the first two is same, but the third might be different
 
 3. if only rotate the model, will the overdraw ratio change (shouldn't change) (drawElementBasedInstance(1,0)) 
     -- just slightly change the up vector and then rerun 
