@@ -10,9 +10,6 @@
 
 5. test if new mean is right.
 
-6. test if the account number is smaller, then the overdraw ratio is smaller
-    - just use two faces , run two times and see 
-
 7. check the (glm::mat4 * )piScratch ; if it is right.
   -- std::cout<<glm::to_String(piScratch); 
   -- imitate the (clusterSort *) piScratch
