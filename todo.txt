@@ -1,12 +1,9 @@
 
 
-2. test if overdraw ratio is the same (compared with webgl with same face,same frame and save viewpoint) (drawElementBasedInstance(1,0))
-    -- shouldn't have big differences, prove the overdraw ratio is right
-    -- the first two is same, but the third might be different
-
 3. if only rotate the model, will the overdraw ratio change (shouldn't change) (drawElementBasedInstance(1,0)) 
     -- just slightly change the up vector and then rerun 
     -- then it's okay to use the transformations now to compute, the allRatios get is right 
+    -- camera need slightly change because of the transformation is not right
 
 4. test if assignments and minratios is the same ? (for ratios set a boudary)
     -- or just test if the allRatios is under control right
