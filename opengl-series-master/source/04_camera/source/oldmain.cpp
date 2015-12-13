@@ -40,8 +40,8 @@ using std::sort;
 #define CANVASXNUMS 12
 #define CANVASYNUMS 12
 #define INUMCLUSTERS 5
-#define CANVASHEIGHT 500
-#define CANVASWIDTH 500
+#define CANVASHEIGHT 100
+#define CANVASWIDTH 100
 
 
 // constants
@@ -243,11 +243,13 @@ void overdrawRatio(){
 	unsigned char * pixel = (unsigned char *)piScratch;
 	piScratch += INUMVIEWS*CANVASHEIGHT*CANVASWIDTH;
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, pixel_buffer);
-	glReadBuffer(GL_FRONT);
+	if (offScreen)
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+	else
+		glReadBuffer(GL_FRONT);
 	glReadPixels(0, 0, CANVASWIDTH * CANVASXNUMS, CANVASHEIGHT*CANVASYNUMS, GL_RED, GL_UNSIGNED_BYTE, pixel);
-	glReadBuffer(GL_NONE);
-	glBindBuffer(GL_READ_FRAMEBUFFER, 0);
+	//glReadBuffer(GL_NONE);
+	//glBindBuffer(GL_READ_FRAMEBUFFER, 0);
 	int drawedPixel,showedPixel,cameraId;
 	float avgRatios[INUMVIEWS];
 	
@@ -305,10 +307,13 @@ void overdrawRatio(){
 	{
 		free(piScratchBase);
 	}
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 // draws a single frame
 static void Render(GLuint baseInstance) {
 	// clear everything
+	if (offScreen)
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 	glClearColor(0, 0, 0, 1); // black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -353,6 +358,7 @@ static void Render(GLuint baseInstance) {
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
 	//std::cout << userCounters[0] << std::endl;
 	overdrawRatio();
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
 
