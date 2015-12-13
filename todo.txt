@@ -1,14 +1,27 @@
 
 if the assignments is right , then the patchSort and new Face is right, only need to check the ratio get is right or not
+1. make the ratio[75][5][162]; the only one constant. and each time make it 0; and every APPmain() give the new ratio results; make assignment and minRatio
+-- need to check if assignment is right
+-- 20 minutes
+2. see if the camera view is right ; random test 10 
+-- 15minutes
 
-1. if only rotate the model, will the overdraw ratio change (shouldn't change) (drawElementBasedInstance(1,0)) 
-    -- camera need slightly change because of the transformation is not right  1.0h
-2. see, 162 viewpoints, 13 x , 13 y. drawed position, read positions? 15 minutes
+3. new mean is same? -10minutes
+
+4. for new and old ratio, just count the atomic counter numbers. one is with old main another is with new mean
+- get the cameraIds[numFrames][162], count[numFrames] 10 minutes
+- new transformatrix ?? 1h
+- atomic count 
+- for compare the ratio
+// new load triangles() for fullTransformMatrix
+// and without overdraw ratio
+//or another method is read the ratios of the right ones
     
+5. check if new ratio is small or not -30minutes
+
 3. check the (glm::mat4 * )piScratch ; if it is right. 10 minutes
   -- std::cout<<glm::to_String(piScratch); 
   -- imitate the (clusterSort *) piScratch
-4. change the buffer set, don't want defines 15 minutes
 5. read int and char *, see what is the numbers 2h 
-6. try with script 
-7. done
+    - try with script 
+done
