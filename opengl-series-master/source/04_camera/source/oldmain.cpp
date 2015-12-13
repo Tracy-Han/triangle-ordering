@@ -45,10 +45,10 @@ using std::sort;
 
 
 // constants
-const glm::vec2 SCREEN_SIZE(CANVASWIDTH*INUMVIEWS, CANVASHEIGHT*1);
+const glm::vec2 SCREEN_SIZE(CANVASWIDTH*CANVASXNUMS, CANVASHEIGHT*CANVASYNUMS);
 
 // globals
-bool offScreen = false;
+bool offScreen = true;
 GLFWwindow* gWindow = NULL;
 tdogl::Camera gCamera;
 tdogl::Program* gProgram = NULL;
@@ -160,6 +160,7 @@ static void LoadTriangle(float * pfVertexPositionsIn, float * pfCameraPosiitons,
 
 	// setup gCamera
 	gCamera.setPosition(glm::vec3(50, 50, 200));
+	//std::cout << "X: "<<SCREEN_SIZE.x << " Y " << SCREEN_SIZE.y << std::endl;
 	gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 	gCamera.setFieldOfView(40.0f);
 	gCamera.setNearAndFarPlanes(1.0f, 2000.0f);
@@ -171,21 +172,31 @@ static void LoadTriangle(float * pfVertexPositionsIn, float * pfCameraPosiitons,
 		translatePos[i] = -1 + 2.0 / (CANVASXNUMS * 2) + (2.0 / CANVASXNUMS)*i;
 	}
 	glm::mat4 fullTransform[INUMVIEWS]; 
-	int i;
+	int i,cameraId,canvasX,canvasY;
 	// need change up vector
-	for (int y = 0; y < CANVASYNUMS; y++)
+	for (cameraId = 0; cameraId < INUMVIEWS; cameraId++)
 	{
-		for (int x = 0; x < CANVASXNUMS; x++)
-		{
-			i = y*CANVASXNUMS + x;
-			gCamera.setPosition(glm::vec3(pfCameraPosiitons[i * 3], pfCameraPosiitons[i * 3 + 1], pfCameraPosiitons[i * 3 + 2]));
-			gCamera.setDirection(glm::vec3(-pfCameraPosiitons[i * 3], -pfCameraPosiitons[i * 3 + 1], -pfCameraPosiitons[i * 3 + 2]));
-			fullTransform[i] = glm::translate(glm::mat4(1.0), glm::vec3(translatePos[x], translatePos[y], 0.0f))*glm::scale(glm::mat4(1.0), glm::vec3(1.0*CANVASXNUMS, 1.0/CANVASYNUMS, 1.0))*gCamera.matrix();
-			//std::cout << " iteration " << i << "translate_x: " <<translatePos[x]<<" translate_y: "<< translatePos[y] << std::endl;
-		}
+		canvasX = cameraId%CANVASXNUMS; //width
+		canvasY = cameraId / CANVASXNUMS; //height
+		gCamera.setPosition(glm::vec3(pfCameraPosiitons[cameraId * 3], pfCameraPosiitons[cameraId * 3 + 1], pfCameraPosiitons[cameraId * 3 + 2]));
+		gCamera.setDirection(glm::vec3(-pfCameraPosiitons[cameraId * 3], -pfCameraPosiitons[cameraId * 3 + 1], -pfCameraPosiitons[cameraId * 3 + 2]));
+		fullTransform[cameraId] = glm::translate(glm::mat4(1.0), glm::vec3(translatePos[canvasX], translatePos[canvasY], 0.0f))*glm::scale(glm::mat4(1.0), glm::vec3(1.0/CANVASXNUMS, 1.0 / CANVASYNUMS, 1.0))*gCamera.matrix();
+		//fullTransform[cameraId] = gCamera.matrix()*glm::translate(translatePos[canvasX] * CANVASWIDTH, translatePos[canvasY] * CANVASHEIGHT, 1.0f);
+		//std::cout << "cameraId: " << cameraId << " " << glm::to_string(fullTransform[cameraId]) << std::endl;
 	}
-	//std::cout << "numViews " << i << std::endl;
-	//std::cout << "transform matrix 73"<<glm::to_string(fullTransform[73]) << std::endl;
+	//for (int y = 0; y < CANVASYNUMS; y++)
+	//{
+	//	for (int x = 0; x < CANVASXNUMS; x++)
+	//	{
+	//		i = y*CANVASXNUMS + x;
+	//		gCamera.setPosition(glm::vec3(pfCameraPosiitons[i * 3], pfCameraPosiitons[i * 3 + 1], pfCameraPosiitons[i * 3 + 2]));
+	//		gCamera.setDirection(glm::vec3(-pfCameraPosiitons[i * 3], -pfCameraPosiitons[i * 3 + 1], -pfCameraPosiitons[i * 3 + 2]));
+	//		fullTransform[i] = glm::translate(glm::mat4(1.0), glm::vec3(translatePos[x], translatePos[y], 0.0f))*glm::scale(glm::mat4(1.0), glm::vec3(1.0*CANVASXNUMS, 1.0/CANVASYNUMS, 1.0))*gCamera.matrix();
+	//		//std::cout << " iteration " << i << "translate_x: " <<translatePos[x]<<" translate_y: "<< translatePos[y] << std::endl;
+	//		std::cout << "cameraId: " << i << " " << glm::to_string(fullTransform[i]) << std::endl;
+	//	}
+	//}
+	
 	int pos = glGetAttribLocation(gProgram->object(), "fullTransformMatrix");
 	int pos1 = pos + 0;
 	int pos2 = pos + 1;
@@ -244,60 +255,40 @@ void overdrawRatio(){
 	piScratch += INUMVIEWS*CANVASHEIGHT*CANVASWIDTH;
 
 	if (offScreen)
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+		//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	else
 		glReadBuffer(GL_FRONT);
 	glReadPixels(0, 0, CANVASWIDTH * CANVASXNUMS, CANVASHEIGHT*CANVASYNUMS, GL_RED, GL_UNSIGNED_BYTE, pixel);
 	//glReadBuffer(GL_NONE);
 	//glBindBuffer(GL_READ_FRAMEBUFFER, 0);
-	int drawedPixel,showedPixel,cameraId;
+	int drawnPixel,showedPixel,cameraId;
 	float avgRatios[INUMVIEWS];
-	
-	//for (cameraId = 0; cameraId < INUMVIEWS; cameraId++)
-	//{
-	//	drawedPixel = 0; showedPixel = 0;
-	//	for (int i = 0; i <CANVASHEIGHT; i++) // height
-	//	{
-	//		for (int j = CANVASWIDTH * cameraId; j < CANVASWIDTH * (cameraId + 1); j++)//width
-	//		{
-	//			if ((int)pixel[i * CANVASWIDTH * INUMVIEWS + j] > 0)
-	//			{
-	//				drawedPixel += round((float)pixel[i * CANVASWIDTH * INUMVIEWS + j] / 51.0f);
-	//				showedPixel++;
-	//			}
-	//		}
-	//	}
-	//	avgRatios[cameraId] = (float)drawedPixel / (float)showedPixel;
-	//	std::cout << "drawed pixel numbers " << drawedPixel << std::endl;
-	//	std::cout << "showed pixel numbers " << showedPixel << std::endl;
-	//	std::cout << "averageRatio" << avgRatios[cameraId] << std::endl;
-	//}
-
-	for (int y = 0; y < CANVASYNUMS; y++) //height
+	//getchar();
+	int x, y;
+	for (cameraId = 0; cameraId < INUMVIEWS; cameraId++)
 	{
-		for (int x = 0; x < CANVASXNUMS; x++)// width
+		x = cameraId%CANVASXNUMS; //width
+		y = cameraId / CANVASXNUMS; //height
+
+		drawnPixel = 0; showedPixel = 0;
+		for (int i = CANVASHEIGHT * y; i < CANVASHEIGHT*(y + 1); i++) //height
 		{
-			cameraId = y*CANVASXNUMS + x;
-			drawedPixel = 0; showedPixel = 0;
-			for (int i = CANVASHEIGHT * y; i < CANVASHEIGHT*(y + 1); i++) //height
+			for (int j = CANVASWIDTH * x; j < CANVASWIDTH*(x + 1); j++)//width
 			{
-				for (int j = CANVASWIDTH * x; j < CANVASWIDTH*(x + 1); j++)//width
+				if ((int)pixel[i * CANVASWIDTH * CANVASXNUMS + j] > 0)
 				{
-					if ((int)pixel[i * CANVASWIDTH * CANVASXNUMS + j] > 0)
-					{
-						drawedPixel += round((float)pixel[i * CANVASWIDTH * CANVASXNUMS + j] / 51.0f);
-						showedPixel++;
-					}
+					drawnPixel += round((float)pixel[i * CANVASWIDTH * CANVASXNUMS + j] / 51.0f);
+					showedPixel++;
 				}
 			}
-			avgRatios[cameraId] = (float)drawedPixel / (float)showedPixel;
-			std::cout <<"cameraId: "<<cameraId<< " drawed pixel numbers " << drawedPixel << std::endl;
-			std::cout << "showed pixel numbers " << showedPixel << std::endl;
-			std::cout << "averageRatio" << avgRatios[cameraId] << std::endl;
-			
 		}
+		avgRatios[cameraId] = (float)drawnPixel / (float)showedPixel;
+		//std::cout << "drawn pixel numbers " << drawnPixel << std::endl;
+		//std::cout << "showed pixel numbers " << showedPixel << std::endl;
+		std::cout << "averageRatio" << avgRatios[cameraId] << std::endl;
 	}
-	//glDeleteFramebuffers(1, &pixel_buffer);
+
 	if (piScratch - piScratchBase > 0)
 	{
 		memset(piScratchBase, 0, (piScratch - piScratchBase) * sizeof(int));
@@ -306,13 +297,14 @@ void overdrawRatio(){
 	{
 		free(piScratchBase);
 	}
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
 // draws a single frame
 static void Render(GLuint baseInstance) {
 	// clear everything
 	if (offScreen)
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+		//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 	glClearColor(0, 0, 0, 1); // black
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -357,7 +349,8 @@ static void Render(GLuint baseInstance) {
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
 	//std::cout << userCounters[0] << std::endl;
 	overdrawRatio();
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
@@ -1258,40 +1251,27 @@ int main(int argc, char *argv[]) {
 	int pickIds[5] = { 148, 54, 17, 92, 45 }; int numClusters = 5; int numPatches = iNumClusters;
 	int means[5][INUMFACES * 3];
 	initMeans(pvFramesPatchesPositions, piIndexBufferOut, piClustersOut, numFrames, numClusters, numPatches, pickIds, pfCameraPositions, means, piScratch);
-	// delete later
-	int assignments[INUMFRAMES][INUMVIEWS];
-	myFile = fopen("assignments.txt","r");
-	int count = 0,viewId,frameId;
-	for (int i = 0; i < INUMFRAMES*INUMVIEWS; i++)
-	{
-		frameId = i / INUMVIEWS;
-		viewId = i%INUMVIEWS;
-		fscanf(myFile, "%d \n", &assignments[frameId][viewId]);
-	}
-	fclose(myFile);
-	float minRatios[INUMFRAMES][INUMVIEWS];
-	for (int i = 0; i < INUMFRAMES; i++)
-	{
-		for (int j = 0; j < INUMVIEWS; j++)
-		{
-			minRatios[i][j] = 1.0;
-		}
-	}
+	//// delete later
+	//int assignments[INUMFRAMES][INUMVIEWS];
+	//myFile = fopen("assignments.txt","r");
+	//int count = 0,viewId,frameId;
+	//for (int i = 0; i < INUMFRAMES*INUMVIEWS; i++)
+	//{
+	//	frameId = i / INUMVIEWS;
+	//	viewId = i%INUMVIEWS;
+	//	fscanf(myFile, "%d \n", &assignments[frameId][viewId]);
+	//}
+	//fclose(myFile);
+	//float minRatios[INUMFRAMES][INUMVIEWS];
+	//for (int i = 0; i < INUMFRAMES; i++)
+	//{
+	//	for (int j = 0; j < INUMVIEWS; j++)
+	//	{
+	//		minRatios[i][j] = 1.0;
+	//	}
+	//}
 	
-	// move clusters
-	int i, j, clusterId;
-	bool moved = false;
-	bool clusterMoved;
-	for (i = 0; i < INUMCLUSTERS; i++)
-	{
-		clusterId = i;
-		clusterMoved = moveClusterMean(means[clusterId], clusterId, piIndexBufferOut, piClustersOut, pvFramesPatchesPositions, pvCameraPositions, assignments, minRatios, numPatches, numViews, numFrames, piScratch);
-		if (clusterMoved == true)
-		{
-			moved == true;
-		}
-	}
-
+	
 	/*char meansFile[50];
 	char meansbuffer[50];
 	itoa(clusterId, meansbuffer, 10);
@@ -1305,7 +1285,7 @@ int main(int argc, char *argv[]) {
 	}
 	fclose(myFile);*/
 
-//	AppMain(pfFramesVertexPositionsIn, pfCameraPositions, means, iNumVertices, iNumFaces);
+	AppMain(pfFramesVertexPositionsIn, pfCameraPositions, means, iNumVertices, iNumFaces);
 	tend = time(0);
 	std::cout << "It took" << difftime(tend, tstart) << "second(s)." << std::endl;
 	getchar();
