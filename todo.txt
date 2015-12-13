@@ -1,13 +1,14 @@
 
 if the assignments is right , then the patchSort and new Face is right, only need to check the ratio get is right or not
 
-3. if only rotate the model, will the overdraw ratio change (shouldn't change) (drawElementBasedInstance(1,0)) 
-    -- just slightly change the up vector and then rerun 
-    -- then it's okay to use the transformations now to compute, the allRatios get is right 
-    -- camera need slightly change because of the transformation is not right
+1. if only rotate the model, will the overdraw ratio change (shouldn't change) (drawElementBasedInstance(1,0)) 
+    -- camera need slightly change because of the transformation is not right  1.0h
+2. see, 162 viewpoints, 13 x , 13 y. drawed position, read positions? 15 minutes
     
-7. check the (glm::mat4 * )piScratch ; if it is right.
+3. check the (glm::mat4 * )piScratch ; if it is right. 10 minutes
   -- std::cout<<glm::to_String(piScratch); 
   -- imitate the (clusterSort *) piScratch
-8. 
-  
+4. change the buffer set, don't want defines 15 minutes
+5. read int and char *, see what is the numbers 2h 
+6. try with script 
+7. done
