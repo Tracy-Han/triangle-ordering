@@ -36,9 +36,9 @@ using std::sort;
 #define INUMVERTICES 6675
 #define INUMFACES 12610
 #define INUMFRAMES 30
-#define INUMVIEWS 144
-#define CANVASXNUMS 12
-#define CANVASYNUMS 12
+#define INUMVIEWS 162
+#define CANVASXNUMS 13
+#define CANVASYNUMS 13
 #define INUMCLUSTERS 5
 #define CANVASHEIGHT 100
 #define CANVASWIDTH 100
@@ -48,7 +48,7 @@ using std::sort;
 const glm::vec2 SCREEN_SIZE(CANVASWIDTH*INUMVIEWS, CANVASHEIGHT*1);
 
 // globals
-bool offScreen = true;
+bool offScreen = false;
 GLFWwindow* gWindow = NULL;
 tdogl::Camera gCamera;
 tdogl::Program* gProgram = NULL;
@@ -297,7 +297,6 @@ void overdrawRatio(){
 			
 		}
 	}
-
 	//glDeleteFramebuffers(1, &pixel_buffer);
 	if (piScratch - piScratchBase > 0)
 	{
@@ -892,19 +891,8 @@ void initMeans(Vector  pvFramesPatchesPositions[][482], int * piIndexBufferIn, i
 	for (i = 0; i < numClusters; i++)
 	{
 		Vector viewpoint = Vector(pfCameraPositions[pickIds[i] * 3], pfCameraPositions[pickIds[i] * 3 + 1], pfCameraPositions[pickIds[i] * 3 + 2]);
-		//std::cout << " camera position :"<<viewpoint.v[0] << " " << viewpoint.v[1] << " " << viewpoint.v[2] << std::endl;
-		//depthSortPatch(viewpoint, pvAvgPatchesPositions, numPatches, piIndexBufferIn,piClustersIn,piIndexBufferTmp);
 		depthSortPatch(viewpoint, pvAvgPatchesPositions, numPatches, piIndexBufferIn, piClustersIn, means[i]);
-		//check if the means is right
 	}
-
-	// the piIndexBufferTmp should have five , so some parameters are defined
-
-	/*for (i = 0; i < numClusters; i++){
-	std::cout << " means " << i << ": " << means[i][0] << " " << means[i][1] << " " << means[i][2] << std::endl;
-	std::cout << " means " << i << ": " << means[i][INUMFACES * 3 - 3] << " " << means[i][INUMFACES * 3 - 2] << " " << means[i][INUMFACES * 3 - 1] << std::endl;
-	}*/
-
 	if (piScratch - piScratchBase > 0)
 	{
 		memset(piScratchBase, 0, (piScratch - piScratchBase) * sizeof(int));
@@ -973,19 +961,19 @@ void initialCanvas(int assignments[INUMFRAMES][INUMVIEWS])
 
 }
 
-void newClusterRatio()
+float newClusterRatio()
 {
-
+	return 0.0;
 }
 // moveClusterMean
-bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int * piClustersIn, Vector  pvFramesPatchesPositions[][482], Vector * pvCameraPosiitons, int assignments[][INUMVIEWS], float minRatios[][INUMVIEWS], int numPatches, int numViews, int numFrames, int * piIndexBufferOut, int *piScratch)
+bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int * piClustersIn, Vector  pvFramesPatchesPositions[][482], Vector * pvCameraPosiitons, int assignments[][INUMVIEWS], float minRatios[][INUMVIEWS], int numPatches, int numViews, int numFrames, int *piScratch)
 {
 	int i, j;
 	bool bMalloc = false;
 	bool moved = false;
 	if (piScratch == NULL)
 	{
-		int iScratchSize = (numFrames*numViews * 2 + numPatches * 2)* sizeof(int);
+		int iScratchSize = (numFrames*numViews * 2 + numPatches * 2+INUMFACES*3)* sizeof(int);
 		piScratch = (int *)malloc(iScratchSize);
 		memset(piScratch, 0, iScratchSize);
 		bMalloc = true;
@@ -995,8 +983,8 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 	piScratch += 2 * numFrames*numViews;
 	patchSort * viewToPatch = (patchSort *)piScratch;
 	piScratch += numPatches * 2;
-	// make sure every original distance is 0
-	//std::cout << viewToPatch[0].dist<<viewToPatch[numPatches-1].dist<< std::endl;
+	int * newMean = piScratch;
+	piScratch += INUMFACES * 3;
 
 	int count = 0; float avgRatio = 0;
 	for (i = 0; i < numFrames; i++)
@@ -1005,6 +993,7 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 		{
 			if (assignments[i][j] == clusterId)
 			{
+				
 				cluster[count].frameId = i;
 				cluster[count].viewId = j;
 				avgRatio += minRatios[i][j];
@@ -1013,7 +1002,6 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 		}
 	}
 	avgRatio /= count;
-
 
 	int frameId, viewId;
 	for (i = 0; i < numPatches; i++)
@@ -1026,34 +1014,30 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 		viewId = cluster[i].viewId;
 		for (j = 0; j < numPatches; j++)
 		{
-			// make sure the distance is right
 			viewToPatch[j].dist += dist(pvCameraPosiitons[viewId], pvFramesPatchesPositions[frameId][j]);
 		}
 	}
 	std::sort(viewToPatch, viewToPatch + numPatches, sortfunc);
-	std::cout << viewToPatch[0].dist << viewToPatch[numPatches - 2].dist << viewToPatch[numPatches - 1].dist << std::endl;
-	std::cout << viewToPatch[0].id << " " << viewToPatch[numPatches - 2].id << " " << viewToPatch[numPatches - 1].id << std::endl;
-	std::cout << piClustersIn[numPatches - 2] << " " << piClustersIn[numPatches - 1] << " " << piClustersIn[numPatches] << std::endl;
-	// question might exsitst in piIndexBufferOut
-	// test the newRatio
-	int newRatio = 0;
-	newClusterRatio();
+	//if (clusterId == 0)
+	//{
+	//	viewToPatch[417].id = 431;
+	//	viewToPatch[418].id = 346;
+	//}
+	int jj = 0;
+	for (i = 0; i < numPatches; i++)
+	{
+		for (j = piClustersIn[viewToPatch[i].id] * 3; j < piClustersIn[viewToPatch[i].id + 1] * 3; j++)
+		{
+			newMean[jj++] = piIndexBufferIn[j];
+		}
+	}
+	float newRatio = newClusterRatio();
 	if (newRatio < avgRatio)
 	{
 		moved = true;
 		std::cout << "new Ratio is less" << std::endl;
-		int jj = 0;
-		for (i = 0; i < numPatches; i++)
-		{
-			for (j = piClustersIn[viewToPatch[i].id] * 3; j < piClustersIn[viewToPatch[i].id + 1] * 3; j++)
-			{
-				piIndexBufferOut[jj++] = piIndexBufferIn[j];
-			}
-		}
-		std::cout << "means " << clusterId << " " << piIndexBufferOut[0] << " " << piIndexBufferOut[1] << " " << piIndexBufferOut[2] << std::endl;
-		std::cout << "means " << clusterId << " " << piIndexBufferOut[3] << " " << piIndexBufferOut[4] << " " << piIndexBufferOut[5] << std::endl;
-		std::cout << piIndexBufferOut[INUMFACES * 3 - 3] << " " << piIndexBufferOut[INUMFACES * 3 - 2] << " " << piIndexBufferOut[INUMFACES * 3 - 1] << std::endl;
-		// copy this piIndexBufferOut to clusterMean
+		// copy the new mean to old Mean
+		memcpy(clusterMean, newMean,INUMFACES*3* sizeof(newMean));
 	}
 	else{
 		std::cout << "old ratio is less" << std::endl;
@@ -1071,7 +1055,7 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 	return moved;
 }
 // moveMeans
-bool moveMeans(int means[INUMFACES * 3][INUMCLUSTERS], int* piIndexBufferIn, int * piClustersIn, Vector  pvFramesPatchesPositions[][482], Vector * pvCameraPositions, int assignments[][INUMVIEWS], float minRatios[][INUMVIEWS], int numClusters, int numPatches, int numViews, int numFrames, int * piIndexBufferOut, int *piScratch)
+bool moveMeans(int means[INUMCLUSTERS][INUMFACES * 3], int* piIndexBufferIn, int * piClustersIn, Vector  pvFramesPatchesPositions[][482], Vector * pvCameraPositions, int assignments[][INUMVIEWS], float minRatios[][INUMVIEWS], int numClusters, int numPatches, int numViews, int numFrames, int *piScratch)
 {
 	int i, j, clusterId;
 	bool moved = false;
@@ -1079,7 +1063,7 @@ bool moveMeans(int means[INUMFACES * 3][INUMCLUSTERS], int* piIndexBufferIn, int
 	for (i = 0; i < 1; i++)
 	{
 		clusterId = i;
-		clusterMoved = moveClusterMean(means[clusterId], clusterId, piIndexBufferIn, piClustersIn, pvFramesPatchesPositions, pvCameraPositions, assignments, minRatios, numPatches, numViews, numFrames, piIndexBufferOut, piScratch);
+		clusterMoved = moveClusterMean(means[clusterId], clusterId, piIndexBufferIn, piClustersIn, pvFramesPatchesPositions, pvCameraPositions, assignments, minRatios, numPatches, numViews, numFrames, piScratch);
 		if (clusterMoved == true)
 		{
 			moved == true;
@@ -1188,7 +1172,6 @@ void AppMain(float pfVertexPositionsIn[][INUMVERTICES*3],float * pfCameraPosiito
 			numDraws++;
 		}
 	}
-
 	glfwTerminate();
 }
 
@@ -1204,15 +1187,14 @@ int main(int argc, char *argv[]) {
 	float pfFramesVertexPositionsIn[numFrames][INUMVERTICES * 3];
 	float pfCameraPositions[162 * 3];
 
-
 	int *piScratch = NULL; int piClustersOut[INUMFACES * 3]; int iNumClusters;
 
 	//Animation, Character
 	char Character[5][20] = { "Ganfaul_M_Aure", "Kachujin_G_Rosales", "Maw_J_Laygo", "Nightshade", "Peasant_Girl" };
 	char Animation[9][40] = { "Crouch_Walk_Left", "Standing_2H_Cast_Spell", "Standing_2H_Magic_Area_Attack", "Standing_Jump", "Standing_React_Death_Backward", "Standing_React_Large_From_Back", "Standing_Turn_Right_90", "dancing_maraschino_step", "standing_melee_combo_attack" };
 	char vfFolder[150]; char facePath[150]; char verticesPath[150]; char cameraPath[150];
-	//strcpy(vfFolder, "D:/Hansf/Research/triangleordering/webstorm/VerticeFace/");
-	strcpy(vfFolder, "VerticeFace/");
+	strcpy(vfFolder, "D:/Hansf/Research/triangleordering/webstorm/VerticeFace/");
+	//strcpy(vfFolder, "VerticeFace/");
 	strcat(vfFolder, Character[characterId]);
 	strcat(vfFolder, "/");
 	strcat(vfFolder, Animation[aniId]);
@@ -1243,7 +1225,6 @@ int main(int argc, char *argv[]) {
 	}
 	fclose(myFile);
 	Vector *pvCameraPositions = (Vector *)pfCameraPositions;
-	//std::cout << pvCameraPositions[numViews-1].v[0] << std::endl;
 	for (int frameId = 0; frameId < numFrames; frameId++)
 	{
 		char buffer[50];
@@ -1266,19 +1247,65 @@ int main(int argc, char *argv[]) {
 	}
 
 	FanVertCluster(pfFramesVertexPositionsIn[0], piIndexBufferIn, piIndexBufferOut, iNumVertices, iNumFaces, iCacheSize, alpha, piScratch, piClustersOut, &iNumClusters);
-	// check if the patchesPositions are right
 	Vector  pvFramesPatchesPositions[numFrames][482];
 	for (int i = 0; i < numFrames; i++)
 	{
 		pvPatchesPostions(piIndexBufferOut, iNumFaces, pfFramesVertexPositionsIn[i], iNumVertices, piClustersOut, iNumClusters, pvFramesPatchesPositions[i], piScratch);
 	}
 
+	// start point
 	tstart = time(0);
 	int pickIds[5] = { 148, 54, 17, 92, 45 }; int numClusters = 5; int numPatches = iNumClusters;
 	int means[5][INUMFACES * 3];
 	initMeans(pvFramesPatchesPositions, piIndexBufferOut, piClustersOut, numFrames, numClusters, numPatches, pickIds, pfCameraPositions, means, piScratch);
+	// delete later
+	int assignments[INUMFRAMES][INUMVIEWS];
+	myFile = fopen("assignments.txt","r");
+	int count = 0,viewId,frameId;
+	for (int i = 0; i < INUMFRAMES*INUMVIEWS; i++)
+	{
+		frameId = i / INUMVIEWS;
+		viewId = i%INUMVIEWS;
+		fscanf(myFile, "%d \n", &assignments[frameId][viewId]);
+	}
+	fclose(myFile);
+	float minRatios[INUMFRAMES][INUMVIEWS];
+	for (int i = 0; i < INUMFRAMES; i++)
+	{
+		for (int j = 0; j < INUMVIEWS; j++)
+		{
+			minRatios[i][j] = 1.0;
+		}
+	}
+	
+	// move clusters
+	int i, j, clusterId;
+	bool moved = false;
+	bool clusterMoved;
+	for (i = 0; i < INUMCLUSTERS; i++)
+	{
+		clusterId = i;
+		clusterMoved = moveClusterMean(means[clusterId], clusterId, piIndexBufferOut, piClustersOut, pvFramesPatchesPositions, pvCameraPositions, assignments, minRatios, numPatches, numViews, numFrames, piScratch);
+		if (clusterMoved == true)
+		{
+			moved == true;
+		}
+	}
 
-	AppMain(pfFramesVertexPositionsIn, pfCameraPositions, means, iNumVertices, iNumFaces);
+	/*char meansFile[50];
+	char meansbuffer[50];
+	itoa(clusterId, meansbuffer, 10);
+	strcpy(meansFile, "newMeans");
+	strcat(meansFile, meansbuffer);
+	strcat(meansFile, ".txt");
+	myFile = fopen(meansFile, "w");
+	for (int j = 0; j < INUMFACES * 3; j++)
+	{
+	fprintf(myFile, "%d \n", means[0][j]);
+	}
+	fclose(myFile);*/
+
+//	AppMain(pfFramesVertexPositionsIn, pfCameraPositions, means, iNumVertices, iNumFaces);
 	tend = time(0);
 	std::cout << "It took" << difftime(tend, tstart) << "second(s)." << std::endl;
 	getchar();

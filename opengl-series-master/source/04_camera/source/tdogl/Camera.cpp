@@ -151,5 +151,5 @@ void Camera::setDirection(const glm::vec3& direction) {
 
 glm::mat4 Camera::getWorldToViewMatrix() const
 {
-	return glm::lookAt(_position, _position + _viewDirection, glm::vec3(1.0,1.0,1.0));
+	return glm::lookAt(_position, _position + _viewDirection, glm::vec3(0.0,1.0,0.0));
 }
