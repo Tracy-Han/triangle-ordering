@@ -39,7 +39,7 @@ namespace tdogl {
          The position of the camera.
          */
         const glm::vec3& position() const;
-        void setPosition(const glm::vec3& position);
+        float setPosition(const glm::vec3& position);
         void offsetPosition(const glm::vec3& offset);
 
         /**

@@ -16,6 +16,9 @@
  limitations under the License.
  */
 #define _USE_MATH_DEFINES
+#include <iostream>
+#include <glm/ext.hpp>
+
 #include <cmath>
 #include "Camera.h"
 #include <glm/gtc/matrix_transform.hpp>
@@ -42,8 +45,10 @@ const glm::vec3& Camera::position() const {
     return _position;
 }
 
-void Camera::setPosition(const glm::vec3& position) {
+float Camera::setPosition(const glm::vec3& position) {
     _position = position;
+	//std::cout << glm::to_string(_position) << std::endl;
+	return 1.0f;
 }
 
 void Camera::offsetPosition(const glm::vec3& offset) {
@@ -90,8 +95,8 @@ void Camera::offsetOrientation(float upAngle, float rightAngle) {
 void Camera::lookAt(glm::vec3 position) {
     assert(position != _position);
     glm::vec3 direction = glm::normalize(position - _position);
-    _verticalAngle = glm::radians(asinf(-direction.y));
-    _horizontalAngle = -glm::radians(atan2f(-direction.x, -direction.z));
+    _verticalAngle = glm::degrees(asinf(-direction.y));
+    _horizontalAngle = -glm::degrees(atan2f(-direction.x, -direction.z));
     normalizeAngles();
 }
 
@@ -120,8 +125,7 @@ glm::vec3 Camera::up() const {
 }
 
 glm::mat4 Camera::matrix() const {
-   // return projection() * view();
-	return projection()*getWorldToViewMatrix();
+	return projection() * view();
 }
 
 glm::mat4 Camera::projection() const {
@@ -148,8 +152,7 @@ void Camera::normalizeAngles() {
 void Camera::setDirection(const glm::vec3& direction) {
 	_viewDirection = direction;
 }
-
 glm::mat4 Camera::getWorldToViewMatrix() const
 {
-	return glm::lookAt(_position, _position + _viewDirection, glm::vec3(1.0,1.0,1.0));
+	return glm::lookAt(_position, _position + _viewDirection, glm::vec3(0.0,1.0,0.0));
 }

@@ -33,22 +33,22 @@ using std::sort;
 
 #define cf(p, c, v) (((p-c+2*v) > iCacheSize) ? (0) : (p-c))
 
-#define INUMVERTICES 6675
-#define INUMFACES 12610
-#define INUMFRAMES 30
+//#define INUMVERTICES 6675
+//#define INUMFACES 12610
+//#define INUMFRAMES 30
 #define INUMVIEWS 162
 #define CANVASXNUMS 13
 #define CANVASYNUMS 13
 #define INUMCLUSTERS 5
-#define CANVASHEIGHT 100
-#define CANVASWIDTH 100
+#define CANVASHEIGHT 50
+#define CANVASWIDTH 50
 
 
 // constants
 const glm::vec2 SCREEN_SIZE(CANVASWIDTH*CANVASXNUMS, CANVASHEIGHT*CANVASYNUMS);
 
 // globals
-bool offScreen = true;
+bool offScreen = false;
 GLFWwindow* gWindow = NULL;
 tdogl::Camera gCamera;
 tdogl::Program* gProgram = NULL;
@@ -150,7 +150,7 @@ static void LoadTriangle(float * pfVertexPositionsIn, float * pfCameraPosiitons,
 	glBindBuffer(GL_ARRAY_BUFFER, gVBO);
 
 	GLfloat * vertexData2 = (GLfloat *)pfVertexPositionsIn;
-	glBufferData(GL_ARRAY_BUFFER, INUMVERTICES*3*4, vertexData2, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, numVertices*3*4, vertexData2, GL_STATIC_DRAW);
 	// connect the xyz to the "vert" attribute of the vertex shader
 	glEnableVertexAttribArray(gProgram->attrib("vert"));
 	glVertexAttribPointer(gProgram->attrib("vert"), 3, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -159,7 +159,7 @@ static void LoadTriangle(float * pfVertexPositionsIn, float * pfCameraPosiitons,
 	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferId);
 
 	// setup gCamera
-	gCamera.setPosition(glm::vec3(50, 50, 200));
+	gCamera.setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	//std::cout << "X: "<<SCREEN_SIZE.x << " Y " << SCREEN_SIZE.y << std::endl;
 	gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
 	gCamera.setFieldOfView(40.0f);
@@ -173,30 +173,16 @@ static void LoadTriangle(float * pfVertexPositionsIn, float * pfCameraPosiitons,
 	}
 	glm::mat4 fullTransform[INUMVIEWS]; 
 	int i,cameraId,canvasX,canvasY;
-	// need change up vector
+	double result, x = 1;
 	for (cameraId = 0; cameraId < INUMVIEWS; cameraId++)
 	{
 		canvasX = cameraId%CANVASXNUMS; //width
 		canvasY = cameraId / CANVASXNUMS; //height
 		gCamera.setPosition(glm::vec3(pfCameraPosiitons[cameraId * 3], pfCameraPosiitons[cameraId * 3 + 1], pfCameraPosiitons[cameraId * 3 + 2]));
-		gCamera.setDirection(glm::vec3(-pfCameraPosiitons[cameraId * 3], -pfCameraPosiitons[cameraId * 3 + 1], -pfCameraPosiitons[cameraId * 3 + 2]));
+		gCamera.lookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 		fullTransform[cameraId] = glm::translate(glm::mat4(1.0), glm::vec3(translatePos[canvasX], translatePos[canvasY], 0.0f))*glm::scale(glm::mat4(1.0), glm::vec3(1.0/CANVASXNUMS, 1.0 / CANVASYNUMS, 1.0))*gCamera.matrix();
-		//fullTransform[cameraId] = gCamera.matrix()*glm::translate(translatePos[canvasX] * CANVASWIDTH, translatePos[canvasY] * CANVASHEIGHT, 1.0f);
-		//std::cout << "cameraId: " << cameraId << " " << glm::to_string(fullTransform[cameraId]) << std::endl;
 	}
-	//for (int y = 0; y < CANVASYNUMS; y++)
-	//{
-	//	for (int x = 0; x < CANVASXNUMS; x++)
-	//	{
-	//		i = y*CANVASXNUMS + x;
-	//		gCamera.setPosition(glm::vec3(pfCameraPosiitons[i * 3], pfCameraPosiitons[i * 3 + 1], pfCameraPosiitons[i * 3 + 2]));
-	//		gCamera.setDirection(glm::vec3(-pfCameraPosiitons[i * 3], -pfCameraPosiitons[i * 3 + 1], -pfCameraPosiitons[i * 3 + 2]));
-	//		fullTransform[i] = glm::translate(glm::mat4(1.0), glm::vec3(translatePos[x], translatePos[y], 0.0f))*glm::scale(glm::mat4(1.0), glm::vec3(1.0*CANVASXNUMS, 1.0/CANVASYNUMS, 1.0))*gCamera.matrix();
-	//		//std::cout << " iteration " << i << "translate_x: " <<translatePos[x]<<" translate_y: "<< translatePos[y] << std::endl;
-	//		std::cout << "cameraId: " << i << " " << glm::to_string(fullTransform[i]) << std::endl;
-	//	}
-	//}
-	
+
 	int pos = glGetAttribLocation(gProgram->object(), "fullTransformMatrix");
 	int pos1 = pos + 0;
 	int pos2 = pos + 1;
@@ -226,15 +212,15 @@ static void LoadTriangle(float * pfVertexPositionsIn, float * pfCameraPosiitons,
 	GLuint * indices = (GLuint *)piIndexBufferIn;
 	glGenBuffers(1, &eboID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, INUMFACES*3*4, indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, numFaces*3*4, indices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	// setup gCamera
-	gCamera.setPosition(glm::vec3(50, 50, 200));
-	gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
-	gCamera.setFieldOfView(60.0f);
-	gCamera.setNearAndFarPlanes(1.0f, 2000.0f);
-	gCamera.setDirection(glm::vec3(-50, -50, -200));
+	//// setup gCamera
+	//gCamera.setPosition(glm::vec3(50, 50, 200));
+	//gCamera.setViewportAspectRatio(SCREEN_SIZE.x / SCREEN_SIZE.y);
+	//gCamera.setFieldOfView(60.0f);
+	//gCamera.setNearAndFarPlanes(1.0f, 2000.0f);
+	//gCamera.setDirection(glm::vec3(-50, -50, -200));
 }
 
 
@@ -288,7 +274,6 @@ void overdrawRatio(){
 		//std::cout << "showed pixel numbers " << showedPixel << std::endl;
 		std::cout << "averageRatio" << avgRatios[cameraId] << std::endl;
 	}
-
 	if (piScratch - piScratchBase > 0)
 	{
 		memset(piScratchBase, 0, (piScratch - piScratchBase) * sizeof(int));
@@ -299,8 +284,8 @@ void overdrawRatio(){
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 }
-// draws a single frame
-static void Render(GLuint baseInstance) {
+
+static void Render(GLuint baseInstance,int numFaces) {
 	// clear everything
 	if (offScreen)
 		//glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
@@ -331,7 +316,7 @@ static void Render(GLuint baseInstance) {
 
 	// draw the VAO
 
-	glDrawElementsInstancedBaseInstance(GL_TRIANGLES, INUMFACES * 3, GL_UNSIGNED_INT, 0, INUMVIEWS, baseInstance);
+	glDrawElementsInstancedBaseInstance(GL_TRIANGLES, numFaces * 3, GL_UNSIGNED_INT, 0, INUMVIEWS, baseInstance);
 
 	// unbind the VAO
 	glBindVertexArray(0);
@@ -353,13 +338,6 @@ static void Render(GLuint baseInstance) {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
-void Update()
-{
-	float r = 5.2;
-	gCamera.setPosition(glm::vec3(0, 0, 300));
-	gCamera.lookAt(glm::vec3(0, 0, 0));
-}
 void OnError(int errorCode, const char* msg) {
 	throw std::runtime_error(msg);
 }
@@ -397,8 +375,6 @@ float FanVertLinSort(int *piIndexBufferIn, int *piIndexBufferOut, int iNumFaces,
 	int iCurCachePos = 1 + iCacheSize; //so that cache position of 0 is out of cache
 	int iCurCachePosFan;
 
-	//fill in piFanPos with number of triangles adjacent to each vertex
-	//fill in piFanList with all vertex id's that appear in this index buffer
 	int nv = 0;
 	for (i = 0; i < iNumFaces3; i++)
 	{
@@ -407,25 +383,12 @@ float FanVertLinSort(int *piIndexBufferIn, int *piIndexBufferOut, int iNumFaces,
 		if (piFanPos[ind] == 1)
 			piFanList[nv++] = ind;
 	}
-
-	//compute a running sum of the counts in piFanPos and update it accordingly
-	//this will allow us to reorder the triangles so that they are clustered
-	// based on their vertex ids
 	for (i = 0; i < nv; i++)
 	{
 		int x = piFanPos[piFanList[i]];
 		piRemValence[sum] = x;
 		sum = (piFanPos[piFanList[i]] += sum);
 	}
-
-	//Next we write out a list of triangle ids clustered by starting vertex
-	//each triangle appears 3 times in this list with a different starting vertex
-	// (e.g., 1 2 3, 2 3 1, 3 1 2 being each of the three possible permutations)
-	// this way, after clustering, we have clusters of full fans around each vertex 
-	// with each triangle appearing 3 times in the list, once for each adjacent vertex
-	//In order to make the code efficient, triangles are uniquely identified by an index 
-	// into the original buffer. So, id 7 is the second permutation of the third triangle 
-	// in the input array.
 	for (i = 0; i < iNumFaces3; i++)
 	{
 		piTriList[--piFanPos[piIndexBufferIn[i]]] = i;
@@ -630,14 +593,8 @@ void FanVertCluster(float *pfVertexPositionsIn,   //vertex buffer positions, 3 f
 	int iNumVertices,             //# of vertices in the vertex buffer
 	int iNumFaces,                //# of faces in the index buffer
 	int iCacheSize,               //hardware cache size
-
 	float alpha,                  //constant parameter to compute lambda term from algorithm 
-	//lambda = alpha + beta * ACMR_OF_TIPSY
-
 	int *piScratch = NULL,        //optional temp buffer for computations; its size in bytes should be:
-	//FanVertScratchSize(iNumVertices, iNumFaces)
-	//if NULL is passed, function will allocate and free this data
-
 	int *piClustersOut = NULL,    //optional buffer for the output cluster position (in faces) of each cluster
 	int *piNumClustersOut = NULL) //the number of putput clusters
 {
@@ -783,16 +740,10 @@ void pvPatchesPostions(int *piIndexBufferIn,
 		fCArea += fArea;
 	}
 	vMeshPositions /= fMArea * 3.f;
-
-	//std::cout << pvClusterPositions[0].v[0]<<" "<<pvClusterPositions[0].v[1]<<" "<<pvClusterPositions[0].v[2] << std::endl;
-	//std::cout << pvClusterPositions[iNumClusters - 1].v[0] << " "<<pvClusterPositions[iNumClusters - 1].v[1]<<" " << pvClusterPositions[iNumClusters - 1].v[2] << std::endl;
 	for (int i = 0; i < iNumClusters; i++){
 		pvPatchesPositions[i] = Vector(pvClusterPositions[i].v[0], pvClusterPositions[i].v[1], pvClusterPositions[i].v[2]);
 	}
-	//pvPatchesPositions = pvClusterPositions;
-
-	//std::cout << pvPatchesPositions[0].v[0]<<" " <<pvPatchesPositions[0].v[1]<<" "<<pvPatchesPositions[0].v[2]<< std::endl;
-	//std::cout << pvPatchesPositions[iNumClusters-1].v[0] << " " << pvPatchesPositions[iNumClusters-1].v[1] << " " << pvPatchesPositions[iNumClusters-1].v[2] << std::endl;
+	
 	if (piScratch - piScratchBase > 0)
 	{
 		memset(piScratchBase, 0, (piScratch - piScratchBase) * sizeof(int));
@@ -852,13 +803,13 @@ void depthSortPatch(Vector viewpoint, Vector * pvAvgPatchesPositions, int numPat
 	}
 }
 // function that implements the initializition
-void initMeans(Vector  pvFramesPatchesPositions[][482], int * piIndexBufferIn, int * piClustersIn, int numFrames, int numClusters, int numPatches, int * pickIds, float * pfCameraPositions, int means[INUMCLUSTERS][INUMFACES * 3], int * piScratch)
+void initMeans(int ** means, Vector ** pvFramesPatchesPositions, int * piIndexBufferIn, int * piClustersIn, int numFrames, int numClusters, int numPatches, int numFaces, int * pickIds, float * pfCameraPositions, int * piScratch)
 {
 	int i, j;
 	bool bMalloc = false;
 	if (piScratch == NULL)
 	{
-		int iScratchSize = numPatches * 3 * sizeof(int) + INUMFACES * 3 * sizeof(int);
+		int iScratchSize = numPatches * 3 * sizeof(int) + numFaces * 3 * sizeof(int);
 		piScratch = (int *)malloc(iScratchSize);
 		memset(piScratch, 0, iScratchSize);
 		bMalloc = true;
@@ -867,7 +818,7 @@ void initMeans(Vector  pvFramesPatchesPositions[][482], int * piIndexBufferIn, i
 	Vector *pvAvgPatchesPositions = (Vector *)piScratch;
 	piScratch += numPatches * 3;
 	int *piIndexBufferTmp = piScratch;
-	piScratch += INUMFACES * 3;
+	piScratch += numFaces * 3;
 
 	for (i = 0; i < numFrames; i++)
 	{
@@ -899,59 +850,55 @@ void initMeans(Vector  pvFramesPatchesPositions[][482], int * piIndexBufferIn, i
 //function that implements converting assignments to clusterAssignments
 
 // function that implements the assignments
-void makeAssignment(float assignments[INUMFRAMES][INUMVIEWS], float minRatios[INUMFRAMES][INUMVIEWS], int numFrames, int numViews, int numClusters, int *piScratch)
+void makeAssignment(float ** assignments, float ** minRatios, int numFrames, int numViews, int numClusters, int *piScratch)
 {
-	int i, j;
-	float ratios[INUMFRAMES][INUMCLUSTERS][INUMVIEWS];
+	//float assignments[INUMFRAMES][INUMVIEWS], float minRatios[INUMFRAMES][INUMVIEWS]
+	int x, y,z;
+	bool bMalloc = false;
+	if (piScratch == NULL)
+	{
+		int iScratchSize = numFrames*numClusters*numViews * sizeof(int);
+		piScratch = (int *)malloc(iScratchSize);
+		memset(piScratch, 0, iScratchSize);
+		bMalloc = true;
+	}
+	int *piScratchBase = piScratch;
+	float * ratios = (float * ) piScratch;
+	piScratch += numFrames*numClusters*numViews;
+	
+	//float ratios[INUMFRAMES][INUMCLUSTERS][INUMVIEWS];
+	// numframes depth, numClusters width, numViews height
 
 	// test the sort
 	// makeup the part for compute ovr in opengl
 
+	// 3 dimension array 
+
 	patchSort tempRatio[INUMCLUSTERS];
-	for (i = 0; i < numFrames; i++)
+	for ( x= 0; x < numFrames; x++) 
 	{
-		for (j = 0; j < numViews; j++)
+		for (z = 0; z < numViews; z++)
 		{
-			for (int k = 0; k < numClusters; k++)
+			for (int y = 0; y < numClusters; y++)
 			{
-				tempRatio[k].id = k;
-				tempRatio[k].id = ratios[i][k][j];
-				std::sort(tempRatio, tempRatio + numClusters, sortfunc);
-				minRatios[i][j] = tempRatio[0].dist;
-				assignments[i][j] = tempRatio[0].id;
+				tempRatio[y].id = y;
+				//tempRatio[k].id = ratios[i][k][j];
+				tempRatio[y].id = ratios[x + numClusters * (y + numFrames * z)];
 			}
+			std::sort(tempRatio, tempRatio + numClusters, sortfunc);
+			minRatios[x][z] = tempRatio[0].dist;
+			assignments[x][z] = tempRatio[0].id;
 		}
 	}
 
-}
-// initial canvas 
-void initialCanvas(int assignments[INUMFRAMES][INUMVIEWS])
-{
-	int i, j;
-	// create canvas
-
-	// for the transformatrix
-	glm::mat4 * transformMatrixs;
-	int count[INUMCLUSTERS][INUMFRAMES];
-	int views[INUMCLUSTERS][INUMFRAMES][INUMVIEWS];
-	for (i = 0; i < INUMCLUSTERS; i++)
+	if (piScratch - piScratchBase > 0)
 	{
-		for (j = 0; j < INUMFRAMES; j++)
-		{
-			count[i][j] = 0;
-		}
+		memset(piScratchBase, 0, (piScratch - piScratchBase) * sizeof(int));
 	}
-	int clusterId;
-	for (i = 0; i < INUMFRAMES; i++)
+	if (bMalloc)
 	{
-		for (j = 0; j < INUMVIEWS; j++)
-		{
-			clusterId = assignments[i][j];
-			count[clusterId][i]++;
-			views[clusterId][i][count[clusterId][i]] = j;
-		}
+		free(piScratchBase);
 	}
-
 }
 
 float newClusterRatio()
@@ -959,14 +906,14 @@ float newClusterRatio()
 	return 0.0;
 }
 // moveClusterMean
-bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int * piClustersIn, Vector  pvFramesPatchesPositions[][482], Vector * pvCameraPosiitons, int assignments[][INUMVIEWS], float minRatios[][INUMVIEWS], int numPatches, int numViews, int numFrames, int *piScratch)
+bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int * piClustersIn, Vector ** pvFramesPatchesPositions, Vector * pvCameraPosiitons, int ** assignments, float ** minRatios, int numPatches, int numViews, int numFrames,int numFaces, int *piScratch)
 {
 	int i, j;
 	bool bMalloc = false;
 	bool moved = false;
 	if (piScratch == NULL)
 	{
-		int iScratchSize = (numFrames*numViews * 2 + numPatches * 2+INUMFACES*3)* sizeof(int);
+		int iScratchSize = (numFrames*numViews * 2 + numPatches * 2+numFaces*3)* sizeof(int);
 		piScratch = (int *)malloc(iScratchSize);
 		memset(piScratch, 0, iScratchSize);
 		bMalloc = true;
@@ -977,7 +924,7 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 	patchSort * viewToPatch = (patchSort *)piScratch;
 	piScratch += numPatches * 2;
 	int * newMean = piScratch;
-	piScratch += INUMFACES * 3;
+	piScratch += numFaces * 3;
 
 	int count = 0; float avgRatio = 0;
 	for (i = 0; i < numFrames; i++)
@@ -1030,7 +977,7 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 		moved = true;
 		std::cout << "new Ratio is less" << std::endl;
 		// copy the new mean to old Mean
-		memcpy(clusterMean, newMean,INUMFACES*3* sizeof(newMean));
+		memcpy(clusterMean, newMean,numFaces*3* sizeof(newMean));
 	}
 	else{
 		std::cout << "old ratio is less" << std::endl;
@@ -1048,7 +995,7 @@ bool moveClusterMean(int *clusterMean, int clusterId, int* piIndexBufferIn, int 
 	return moved;
 }
 // moveMeans
-bool moveMeans(int means[INUMCLUSTERS][INUMFACES * 3], int* piIndexBufferIn, int * piClustersIn, Vector  pvFramesPatchesPositions[][482], Vector * pvCameraPositions, int assignments[][INUMVIEWS], float minRatios[][INUMVIEWS], int numClusters, int numPatches, int numViews, int numFrames, int *piScratch)
+bool moveMeans(int ** means, int* piIndexBufferIn, int * piClustersIn, Vector  ** pvFramesPatchesPositions, Vector * pvCameraPositions, int ** assignments, float ** minRatios, int numClusters, int numPatches, int numViews, int numFrames,int numFaces, int *piScratch)
 {
 	int i, j, clusterId;
 	bool moved = false;
@@ -1056,7 +1003,7 @@ bool moveMeans(int means[INUMCLUSTERS][INUMFACES * 3], int* piIndexBufferIn, int
 	for (i = 0; i < 1; i++)
 	{
 		clusterId = i;
-		clusterMoved = moveClusterMean(means[clusterId], clusterId, piIndexBufferIn, piClustersIn, pvFramesPatchesPositions, pvCameraPositions, assignments, minRatios, numPatches, numViews, numFrames, piScratch);
+		clusterMoved = moveClusterMean(means[clusterId], clusterId, piIndexBufferIn, piClustersIn, pvFramesPatchesPositions, pvCameraPositions, assignments, minRatios, numPatches, numViews, numFrames, numFaces,piScratch);
 		if (clusterMoved == true)
 		{
 			moved == true;
@@ -1067,7 +1014,7 @@ bool moveMeans(int means[INUMCLUSTERS][INUMFACES * 3], int* piIndexBufferIn, int
 }
 
 // the program starts here
-void AppMain(float pfVertexPositionsIn[][INUMVERTICES*3],float * pfCameraPosiitons, int piIndexBufferIn[][INUMFACES*3], int numVertices, int numFaces)
+void AppMain(float ** pfVertexPositionsIn,float * pfCameraPosiitons, int ** piIndexBufferIn, int numVertices, int numFaces)
 {
 	// initialise GLFW
 	glfwSetErrorCallback(OnError);
@@ -1161,33 +1108,93 @@ void AppMain(float pfVertexPositionsIn[][INUMVERTICES*3],float * pfCameraPosiito
 		{
 			LoadTriangle(pfVertexPositionsIn[i], pfCameraPosiitons, piIndexBufferIn[j], numVertices, numFaces);
 			glViewport(0, 0, CANVASXNUMS*CANVASWIDTH, CANVASYNUMS*CANVASHEIGHT);
-			Render(baseInstance);
+			Render(baseInstance, numFaces);
 			numDraws++;
 		}
 	}
 	glfwTerminate();
 }
 
+// malloc 2 dimension array
+template <typename T>
+T** new_Array2D(int row, int col)
+{
+	int size = sizeof(T);
+	int point_size = sizeof(T*);
+	//
+	T **arr = (T **)malloc(point_size * row + size * row * col);
+	if (arr != NULL)
+	{
+		T *head = (T*)((int)arr + point_size * row);
+		for (int i = 0; i < row; ++i)
+		{
+			arr[i] = (T*)((int)head + i * col * size);
+			for (int j = 0; j < col; ++j)
+				new (&arr[i][j]) T;
+		}
+	}
+	return (T**)arr;
+}
+//release
+template <typename T>
+void delete_Array2D(T **arr, int row, int col)
+{
+	for (int i = 0; i < row; ++i)
+		for (int j = 0; j < col; ++j)
+			arr[i][j].~T();
+	if (arr != NULL)
+		free((void**)arr);
+}
 
 int main(int argc, char *argv[]) {
+	// parameters needed
+	int characterId = 1; int aniId = 0; float alpha = 0.85; int iCacheSize = 20;
+	char Character[5][20] = { "Ganfaul_M_Aure", "Kachujin_G_Rosales", "Maw_J_Laygo", "Nightshade" };
+	char Animation[7][40] = { "Crouch_Walk_Left", "dancing_maraschino_step", "Standing_2H_Cast_Spell", "Standing_2H_Magic_Area_Attack", "Standing_Jump", "Standing_React_Death_Backward", "Standing_React_Large_From_Back" };
+	int charVertices[4] = { 7865, 6675, 7482, 6691};
+	int charFaces[4] = { 13801, 12610, 13908, 12996};
+	int charPatches[4] = { 475, 482, 611, 387 };
+	int aniDuration[7] = { 30,75, 50, 70, 50, 45, 40 };
+	int numFrames = aniDuration[aniId]; int iNumVertices = charVertices[characterId]; int iNumFaces = charFaces[characterId];int numPatches = charPatches[characterId]; int numViews = 162;
+	int pickIds[5] = { 148, 54, 17, 92, 45 }; int numClusters = 5; 
+
+	// set memory
+	int * miScratch = NULL;
+	bool bMalloc = false;
+	if (miScratch == NULL)
+	{
+		int iScratchSize =  (iNumFaces* 3*3+ numViews*3) * sizeof(int);
+		miScratch = (int *)malloc(iScratchSize);
+		memset(miScratch, 0, iScratchSize);
+		bMalloc = true;
+	}
+	int *piScratchBase = miScratch;
+	int *piIndexBufferIn = miScratch;
+	miScratch += iNumFaces * 3;
+	int * piIndexBufferOut = miScratch;
+	miScratch += iNumFaces * 3;
+	int * piClustersOut = miScratch;
+	miScratch += iNumFaces * 3;
+	float * pfCameraPositions = (float*)miScratch;
+	miScratch += numViews * 3;
 	
+	float ** pfFramesVertexPositionsIn = new_Array2D<float>(numFrames,iNumVertices*3);
+	Vector ** pvFramesPatchesPositions = new_Array2D<Vector>(numFrames, numPatches);
+	int ** means = new_Array2D<int>(numClusters, iNumFaces * 3);
+	//int means[5][INUMFACES * 3];
 	time_t tstart, tend;
 
-	int characterId = 1; int aniId = 0; float alpha = 0.85; int iCacheSize = 20;
-	const int numFrames = 30; int iNumVertices = 6675; int iNumFaces = 12610; int numViews = 162;
-	int piIndexBufferIn[INUMFACES * 3];
-	int piIndexBufferOut[INUMFACES * 3];
-	float pfFramesVertexPositionsIn[numFrames][INUMVERTICES * 3];
-	float pfCameraPositions[162 * 3];
+	
+	//int piIndexBufferIn[INUMFACES * 3];
+	//int piIndexBufferOut[INUMFACES * 3];
+	//int piClustersOut[INUMFACES * 3];
+	//float pfFramesVertexPositionsIn[30][INUMVERTICES * 3];
+	//Vector  pvFramesPatchesPositions[numFrames][482];
+	//float pfCameraPositions[162 * 3];
 
-	int *piScratch = NULL; int piClustersOut[INUMFACES * 3]; int iNumClusters;
-
-	//Animation, Character
-	char Character[5][20] = { "Ganfaul_M_Aure", "Kachujin_G_Rosales", "Maw_J_Laygo", "Nightshade", "Peasant_Girl" };
-	char Animation[9][40] = { "Crouch_Walk_Left", "Standing_2H_Cast_Spell", "Standing_2H_Magic_Area_Attack", "Standing_Jump", "Standing_React_Death_Backward", "Standing_React_Large_From_Back", "Standing_Turn_Right_90", "dancing_maraschino_step", "standing_melee_combo_attack" };
+	int *piScratch = NULL; int iNumClusters;
 	char vfFolder[150]; char facePath[150]; char verticesPath[150]; char cameraPath[150];
 	strcpy(vfFolder, "D:/Hansf/Research/triangleordering/webstorm/VerticeFace/");
-	//strcpy(vfFolder, "VerticeFace/");
 	strcat(vfFolder, Character[characterId]);
 	strcat(vfFolder, "/");
 	strcat(vfFolder, Animation[aniId]);
@@ -1202,7 +1209,7 @@ int main(int argc, char *argv[]) {
 	{
 		printf("ERROR: File cannot be opened\n");
 	}
-	for (int i = 0; i < INUMFACES * 3; i++)
+	for (int i = 0; i < iNumFaces * 3; i++)
 	{
 		fscanf(myFile, "%d \n", &piIndexBufferIn[i]);
 	}
@@ -1232,7 +1239,7 @@ int main(int argc, char *argv[]) {
 		{
 			printf("ERROR : File cannot be opened\n");
 		}
-		for (int i = 0; i < INUMVERTICES * 3; i++)
+		for (int i = 0; i < iNumVertices * 3; i++)
 		{
 			fscanf(myFile, "%f\n", &pfFramesVertexPositionsIn[frameId][i]);
 		}
@@ -1240,7 +1247,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	FanVertCluster(pfFramesVertexPositionsIn[0], piIndexBufferIn, piIndexBufferOut, iNumVertices, iNumFaces, iCacheSize, alpha, piScratch, piClustersOut, &iNumClusters);
-	Vector  pvFramesPatchesPositions[numFrames][482];
+	
 	for (int i = 0; i < numFrames; i++)
 	{
 		pvPatchesPostions(piIndexBufferOut, iNumFaces, pfFramesVertexPositionsIn[i], iNumVertices, piClustersOut, iNumClusters, pvFramesPatchesPositions[i], piScratch);
@@ -1248,9 +1255,8 @@ int main(int argc, char *argv[]) {
 
 	// start point
 	tstart = time(0);
-	int pickIds[5] = { 148, 54, 17, 92, 45 }; int numClusters = 5; int numPatches = iNumClusters;
-	int means[5][INUMFACES * 3];
-	initMeans(pvFramesPatchesPositions, piIndexBufferOut, piClustersOut, numFrames, numClusters, numPatches, pickIds, pfCameraPositions, means, piScratch);
+	initMeans(means, pvFramesPatchesPositions, piIndexBufferOut, piClustersOut, numFrames, numClusters, numPatches, iNumFaces, pickIds, pfCameraPositions, piScratch);
+	//initMeans(pvFramesPatchesPositions, piIndexBufferOut, piClustersOut, numFrames, numClusters, numPatches, pickIds, pfCameraPositions, means, piScratch);
 	//// delete later
 	//int assignments[INUMFRAMES][INUMVIEWS];
 	//myFile = fopen("assignments.txt","r");
@@ -1285,7 +1291,7 @@ int main(int argc, char *argv[]) {
 	}
 	fclose(myFile);*/
 
-	AppMain(pfFramesVertexPositionsIn, pfCameraPositions, means, iNumVertices, iNumFaces);
+	//AppMain(pfFramesVertexPositionsIn, pfCameraPositions, means, iNumVertices, iNumFaces);
 	tend = time(0);
 	std::cout << "It took" << difftime(tend, tstart) << "second(s)." << std::endl;
 	getchar();
