@@ -1,27 +1,34 @@
 
 if the assignments is right , then the patchSort and new Face is right, only need to check the ratio get is right or not
-1. make the ratio[75][5][162]; the only one constant. and each time make it 0; and every APPmain() give the new ratio results; make assignment and minRatio
--- need to check if assignment is right
--- 20 minutes
-2. see if the camera view is right ; random test 10 
--- 15minutes
 
-3. new mean is same? -10minutes
+assignments slightly different for 162*30 only 3 are different
+1. viewpoints reset. reRun the results.
 
-4. for new and old ratio, just count the atomic counter numbers. one is with old main another is with new mean
-- get the cameraIds[numFrames][162], count[numFrames] 10 minutes
-- new transformatrix ?? 1h
-- atomic count 
-- for compare the ratio
-// new load triangles() for fullTransformMatrix
-// and without overdraw ratio
-//or another method is read the ratios of the right ones
-    
-5. check if new ratio is small or not -30minutes
+2. runtime selection.
 
-3. check the (glm::mat4 * )piScratch ; if it is right. 10 minutes
-  -- std::cout<<glm::to_String(piScratch); 
-  -- imitate the (clusterSort *) piScratch
-5. read int and char *, see what is the numbers 2h 
-    - try with script 
+- by noon ,sent the consuming time and averatge overdraw ratio
+
+
+-------------------------------------------------------------------
+1.  viewpoints change 20minutes 
+1.2 cut it to eight part 10minutes ,cuttingId View[8][30], count[8]; 
+1.3 runtime selection, meansfile, assignemnts, considering only take 6 minutes, first debugging 25minutes
+just compare the 30s 
+
+1.4 expensive shader, test the time.
+
+2. the tipsyRatio and the original ratio. See if the the overdraw ratio is also slightly higher
+
+2.2 tipsyRatio(lamda = 0.85; lamda = 3),
+    - read in the face files or compute by code (prefer compute by code)
+    - how to reset the code to make it clean, render is the render party, make it three parts, initial canvas, render, overdrawRatio
+    - render party change the numFrames
+-----------------------------------------------------------------------------------------------------------------------------------
+I don't want to reset all the graphes, because the results are very similar, and this results is already not very accurate. Because it depends on the initial choose. Maybe movie don't need change because it's only one camera.
+
+But I would like to do the results of the runtime tests. 
+
+3. numClusters? should I change? 
+4. alphas? Should I change?
+original ratio, 
 done
