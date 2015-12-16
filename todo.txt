@@ -10,15 +10,21 @@ assignments slightly different for 162*30 only 3 are different
 
 
 -------------------------------------------------------------------
-1.  viewpoints change 20minutes 
-1.2 cut it to eight part 10minutes ,cuttingId View[8][30], count[8]; 
 1.3 runtime selection, meansfile, assignemnts, considering only take 6 minutes, first debugging 25minutes
-just compare the 30s 
+just compare the 30s ， get overdraw ratio of random viewpoints. 300 viewpoints. 
+How to test these 300 viewpoints.
+- draw canvas one time 300 * numFrames 30 minutes
+- draw 2 * numFrames *5 (but cost more memory and need to get the ID location)
+- (if count < 162), then it's fine,counts, cameraIds,mean overdraw ratio,
+- cut to 5 faces
 
 1.4 expensive shader, test the time.
-
+    - use the previous viewpoints, using one canvas. How to just draw One canvas, it's needed
+    - feel the difference 30 minutes
+    
 2. the tipsyRatio and the original ratio. See if the the overdraw ratio is also slightly higher
-
+    - 20 minutes
+    
 2.2 tipsyRatio(lamda = 0.85; lamda = 3),
     - read in the face files or compute by code (prefer compute by code)
     - how to reset the code to make it clean, render is the render party, make it three parts, initial canvas, render, overdrawRatio
