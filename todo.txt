@@ -1,60 +1,23 @@
-
--------------------------------------------------------------------
-1.1 one part is rerun to save the meansfile and assignments
-    -just for reruning and not caring about time (10 minutes)
-1.2 running time , just test for 162 viewpoints or maybe add to all frames (may be just try to use the It's not difficult .h and .cpp)
-    // one needed is the meansfile and assignemnts
-    // assignment[frameId][viewId] --> triangle lists, vertices positions, transformMatrix. This is located in loading (10)
-        - give 10 minutes to understand from cpu to gpu loading
-    // write a function for loading vertices and faces and transformMatrix (5minutes)
-    / cut it to three party(15 minutes need tests)
-    // write a function that is just using the one modelview matrix. What about a shader-text.
-    // for (int frameId =0;frameId<numFrames;frameId++)
-    {
-        loadVertices();
-        for(int viewId =0;viewId<numViews;viewId++)
-        {
-            loadFaces();
-            loadCamera();
-            render(this frame to see)
-        }
-    }
-    // what time it takes.
-    because other part is same, only faces triangle lists are differnt. So we might think the time as linear a + k*pixels;
-    // I expect to finish this by 1 hour.
-
-1.3 the expensive shader. 
-    First use the expensive shader with just loop. The ambient occlusion might take a long time. (10 minutes.)
-1.4 what shader examples? I could read to learn.
-
-1.5 small works but I want to learn.
-    - ACMR in c++
-    - randomViewpoints ovr in c++
-    
-1.3 find where the ratios datas are. 
-How to test these 300 viewpoints.
-- draw canvas one time 300 * numFrames 30 minutes
-- draw 2 * numFrames *5 (but cost more memory and need to get the ID location)
-- (if count < 162), then it's fine,counts, cameraIds,mean overdraw ratio,
-- cut to 5 faces
-
-1.4 expensive shader, test the time.
-    - use the previous viewpoints, using one canvas. How to just draw One canvas, it's needed
-    - feel the difference 30 minutes
-    
-2. the tipsyRatio and the original ratio. See if the the overdraw ratio is also slightly higher
-    - 20 minutes
-    
-2.2 tipsyRatio(lamda = 0.85; lamda = 3),
-    - read in the face files or compute by code (prefer compute by code)
-    - how to reset the code to make it clean, render is the render party, make it three parts, initial canvas, render, overdrawRatio
-    - render party change the numFrames
------------------------------------------------------------------------------------------------------------------------------------
-I don't want to reset all the graphes, because the results are very similar, and this results is already not very accurate. Because it depends on the initial choose. Maybe movie don't need change because it's only one camera.
-
-But I would like to do the results of the runtime tests. 
-
-3. numClusters? should I change? 
-4. alphas? Should I change?
-original ratio, 
-done
+To finish on Wednesday
+1. one animation  - Kachujin Animation 1
+2. obj files to get the vertex x,y,z, normal, uv
+    - before moved per frame
+    - move the animation to center,output new vertice positions (matlab 15 minutes,new output vertices)
+    - update new obj (maya 5 minutes)
+3. 5 means file and assignments (10 minutes)
+    - only need to change the vertices positions(just slightly)
+4. SSAO code(45minutes)
+    - where to get vertice
+    - where to get faceindex
+    - where to get MVP matrix
+5. test with SSAO (2hour)
+    - without texture
+    - with texture
+    - with shadow
+6. face index 
+    - upload once?
+    - which is most fastest for our test
+    - which is most reasonable for our test
+    - faces upload once, and choose which to render
+    - update view matrix, update face (change which face, use always linear face), after 300, update vertices.(realtime useage)
+    - 
