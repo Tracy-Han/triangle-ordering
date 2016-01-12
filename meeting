@@ -1,0 +1,4 @@
+1. clock ticks
+2. simple shader
+3. we don't want the compare video infact.we want the time for now. We just want to show if the time consuming is linear to overdraw ratio.
+4. and because we drop down the overdraw ratio, the time for drawing will drop down also.
