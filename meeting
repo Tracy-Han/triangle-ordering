@@ -1,4 +1,26 @@
 1. clock ticks
+  - take the accurate gpu commands rendering time
+  - one is to compute the rendering times, time appropriate to ovr
+  - another we need to count also the pick which face index we want,ours need to selection time
+1.1 to upload the faceinto the gpu first
+  - bind face index buffer later 
+  - glDrawArrays
+1.2 change viewpoints later
+
 2. simple shader
-3. we don't want the compare video infact.we want the time for now. We just want to show if the time consuming is linear to overdraw ratio.
-4. and because we drop down the overdraw ratio, the time for drawing will drop down also.
+  - the increase should be appropriate to OVR
+  - OVR drawed/showed. showed if fixed, then more drawed,more pixel shader time for a same model with same viewpoint
+  - we could count the ovr and the drawing time
+2.1 one only drawing time/one picking viewpoints
+2.2 original/ours/tipsy?
+3. expensive shader
+3.1 drawing time/one picking viewpoints
+3.2 origianl/ours/tipsy?
+4. ambient occlusion
+
+
+final: one video with 12 numbers for compare.
+1. finish 8 numbers today.
+1. ovr of the original face computation
+2. time for selection 
+3. copy the ambient occlusio to the new file
