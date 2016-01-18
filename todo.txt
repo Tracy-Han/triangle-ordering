@@ -20,4 +20,8 @@ To finish on Wednesday
     - which is most reasonable for our test
     - faces upload once, and choose which to render
     - update view matrix, update face (change which face, use always linear face), after 300, update vertices.(realtime useage)
-    - 
+    
+7. uv coordinates 
+    obj file give more uv pair than vertices posiitons. how to deal with 
+    not very accurate
+    
